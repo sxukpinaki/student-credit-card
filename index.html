@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Smart Card">
+<meta name="apple-mobile-web-app-title" content="Smart Card">
+<meta name="description" content="Smart Card Seller Management Panel">
+<link rel="manifest" href="manifest.json">
+<title>Smart Card</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080810;
+  --surface: rgba(255,255,255,0.04);
+  --surface-hover: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.08);
+  --border-bright: rgba(100,180,255,0.25);
+  --cyan: #00d4ff;
+  --purple: #8b5cf6;
+  --gradient: linear-gradient(135deg, #00d4ff, #8b5cf6);
+  --text: #f0f4ff;
+  --text-muted: rgba(240,244,255,0.45);
+  --success: #10d47e;
+  --error: #ff4d6d;
+  --warning: #ffb020;
+  --radius: 18px;
+  --radius-sm: 12px;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* Ambient background */
+body::before {
+  content: '';
+  position: fixed;
+  top: -30%;
+  left: -20%;
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(ellipse, rgba(0,212,255,0.07) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -20%;
+  right: -20%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(ellipse, rgba(139,92,246,0.09) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 0 env(safe-area-inset-bottom) 0;
+}
+
+/* ─── HEADER ─── */
+.header {
+  padding: 52px 24px 24px;
+  text-align: center;
+}
+
+.logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+/* SVG Logo Recreation */
+.logo-card {
+  width: 72px;
+  height: 48px;
+  background: #111118;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  position: relative;
+  box-shadow:
+    0 0 0 1px rgba(0,212,255,0.3),
+    0 8px 32px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.logo-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #8b5cf6, #00d4ff);
+  border-radius: 10px 10px 0 0;
+}
+.logo-chip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 14px;
+  height: 11px;
+  background: linear-gradient(135deg, #c8a96e, #a07840);
+  border-radius: 2px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 1px;
+  padding: 2px;
+}
+.logo-chip span {
+  background: rgba(0,0,0,0.35);
+  border-radius: 0.5px;
+  display: block;
+}
+.logo-circles {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+}
+.logo-circles div {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid;
+}
+.logo-circles div:first-child {
+  border-color: #00d4ff;
+  margin-right: -4px;
+}
+.logo-circles div:last-child {
+  border-color: #8b5cf6;
+}
+.logo-lines {
+  position: absolute;
+  bottom: 14px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.logo-lines span {
+  display: block;
+  height: 2px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 1px;
+}
+.logo-lines span:first-child { width: 22px; }
+.logo-lines span:last-child { width: 16px; }
+
+.header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ─── CARD / SECTION ─── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin: 0 16px 14px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: border-color 0.3s;
+}
+
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gradient);
+  flex-shrink: 0;
+}
+
+/* ─── INPUTS ─── */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"] {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  outline: none;
+  -webkit-appearance: none;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 10px;
+}
+input::placeholder { color: rgba(240,244,255,0.3); }
+input:focus {
+  border-color: var(--border-bright);
+  background: rgba(0,212,255,0.04);
+}
+input[readonly] {
+  color: var(--cyan);
+  font-family: 'Syne', monospace;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  position: relative;
+  overflow: hidden;
+}
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.15s;
+}
+.btn:active::after { background: rgba(255,255,255,0.1); }
+
+.btn-primary {
+  background: linear-gradient(135deg, #00b8d9, #7c3aed);
+  color: white;
+  box-shadow: 0 4px 20px rgba(0,212,255,0.2);
+}
+.btn-primary:hover { box-shadow: 0 6px 28px rgba(0,212,255,0.35); transform: translateY(-1px); }
+
+.btn-deduct {
+  background: rgba(255,77,109,0.15);
+  border: 1px solid rgba(255,77,109,0.3);
+  color: #ff4d6d;
+}
+.btn-deduct:hover { background: rgba(255,77,109,0.25); }
+
+.btn-recharge {
+  background: rgba(16,212,126,0.12);
+  border: 1px solid rgba(16,212,126,0.3);
+  color: #10d47e;
+}
+.btn-recharge:hover { background: rgba(16,212,126,0.22); }
+
+.btn-ghost {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.btn-ghost:hover { background: var(--surface-hover); color: var(--text); }
+
+.btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* ─── STATUS / MESSAGES ─── */
+.msg {
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  display: none;
+}
+.msg.show { display: block; }
+.msg.success { background: rgba(16,212,126,0.1); color: var(--success); border: 1px solid rgba(16,212,126,0.2); }
+.msg.error   { background: rgba(255,77,109,0.1);  color: var(--error);   border: 1px solid rgba(255,77,109,0.2); }
+.msg.warning { background: rgba(255,176,32,0.1);  color: var(--warning); border: 1px solid rgba(255,176,32,0.2); }
+.msg.info    { background: rgba(0,212,255,0.08);   color: var(--cyan);    border: 1px solid rgba(0,212,255,0.2); }
+
+/* ─── SCAN INDICATOR ─── */
+.scan-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0,212,255,0.05);
+  border: 1px dashed rgba(0,212,255,0.2);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.scan-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cyan);
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+.scan-pulse.active { background: var(--success); animation: none; }
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.7); }
+}
+.scan-wrap input {
+  background: transparent;
+  border: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  font-size: 14px;
+}
+.scan-wrap input:focus { border: none; background: transparent; }
+
+/* ─── USER INFO CARD ─── */
+.user-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: none;
+}
+.user-card.show { display: block; }
+.user-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.balance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gradient);
+  color: white;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.user-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+.detail-item label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.detail-item span {
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* ─── TOAST ─── */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #1a1a2e;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 13px 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  z-index: 9999;
+  max-width: 340px;
+  width: calc(100% - 48px);
+  text-align: center;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s;
+  opacity: 0;
+  pointer-events: none;
+}
+#toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+#toast.success { border-color: rgba(16,212,126,0.4); color: var(--success); }
+#toast.error   { border-color: rgba(255,77,109,0.4); color: var(--error); }
+#toast.warning { border-color: rgba(255,176,32,0.4); color: var(--warning); }
+
+/* ─── SPINNER ─── */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── SECTION DIVIDER ─── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 4px 16px 14px;
+}
+
+/* ─── PANEL TABS ─── */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  margin: 0 16px 14px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 9px 4px;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  color: var(--text-muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.tab-btn.active {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card { animation: fadeUp 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-wrap">
+      <div class="logo-card">
+        <div class="logo-chip">
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+        <div class="logo-lines">
+          <span></span>
+          <span></span>
+        </div>
+        <div class="logo-circles">
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+    </div>
+    <h1>Smart Card</h1>
+    <p>Seller Management Panel</p>
+    <button id="installBtn" onclick="installApp()" style="display:none; margin-top:12px; background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.3); color:#00d4ff; padding:8px 20px; border-radius:20px; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.5px; cursor:pointer; -webkit-tap-highlight-color:transparent;">
+      ⬇ Install App
+    </button>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="loginSection">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Sign In</div>
+      <input type="text" id="username" placeholder="Username" autocomplete="username">
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+      <button class="btn btn-primary" onclick="login()" id="loginBtn">Login</button>
+      <div id="loginMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div id="panel" style="display:none;">
+
+    <!-- SCAN CARD -->
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Card Scanner</div>
+      <div class="scan-wrap">
+        <div class="scan-pulse" id="scanPulse"></div>
+        <input type="text" id="uid" placeholder="Waiting for card scan..." readonly>
+      </div>
+      <div id="statusMsg" class="msg"></div>
+    </div>
+
+    <!-- USER INFO -->
+    <div class="card" id="userInfoCard">
+      <div class="card-title"><span class="dot"></span>Cardholder</div>
+      <div class="user-card" id="userCard">
+        <div class="user-name" id="infoName"></div>
+        <div class="balance-badge" id="infoBadge"></div>
+        <div class="user-details">
+          <div class="detail-item">
+            <label>CIN</label>
+            <span id="infoCin">—</span>
+          </div>
+          <div class="detail-item">
+            <label>Expiry</label>
+            <span id="infoExpiry">—</span>
+          </div>
+          <div class="detail-item" style="grid-column:1/-1">
+            <label>Email</label>
+            <span id="infoEmail">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('txn',this)">Transaction</button>
+      <button class="tab-btn" onclick="switchTab('reg',this)">Register</button>
+      <button class="tab-btn" onclick="switchTab('upd',this)">Update</button>
+    </div>
+
+    <!-- TRANSACTION TAB -->
+    <div class="tab-content active" id="tab-txn">
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>Transaction</div>
+        <input type="text" id="item" placeholder="Item name / note">
+        <input type="number" id="amount" placeholder="Amount (Rs.)" min="1" inputmode="decimal">
+        <div class="btn-row">
+          <button class="btn btn-deduct" onclick="deduct()">− Deduct</button>
+          <button class="btn btn-recharge" onclick="recharge()">+ Recharge</button>
+        </div>
+        <div id="txMsg" class="msg"></div>
+      </div>
+    </div>
+
+    <!-- REGISTER TAB -->
+    <div class="tab-content" id="tab-reg">
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>Register Card</div>
+        <input type="text" id="nameInputR" placeholder="Full Name">
+        <input type="number" id="balanceInputR" placeholder="Initial Balance" min="0" inputmode="decimal">
+        <input type="text" id="cinInputR" placeholder="CIN / ID">
+        <input type="email" id="emailInputR" placeholder="Email Address">
+        <button class="btn btn-primary" onclick="registerUser()">Register User</button>
+        <div id="regMsg" class="msg"></div>
+      </div>
+    </div>
+
+    <!-- UPDATE TAB -->
+    <div class="tab-content" id="tab-upd">
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>Update Card</div>
+        <input type="text" id="nameInputU" placeholder="Full Name">
+        <input type="number" id="balanceInputU" placeholder="Balance" min="0" inputmode="decimal">
+        <input type="text" id="cinInputU" placeholder="CIN / ID">
+        <input type="email" id="emailInputU" placeholder="Email Address">
+        <button class="btn btn-primary" onclick="updateUser()">Update User</button>
+        <div id="updMsg" class="msg"></div>
+      </div>
+    </div>
+
+  </div><!-- /panel -->
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbxyNk4bnK7zPYj9ZIhM-jMLzp6ERKEZyHGL0HBRoEse_8OJL6gjHSHKGBE0aQywz_7c/exec";
+let lastUID = "";
+
+// ── TOAST ──
+function showToast(msg, type="info") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "show " + type;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ""; }, 3500);
+}
+
+// ── MSG HELPER ──
+function setMsg(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = "msg " + (msg ? "show " + type : "");
+}
+
+// ── TAB SWITCH ──
+function switchTab(tab, btn) {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + tab).classList.add("active");
+  btn.classList.add("active");
+}
+
+// ── LOGIN ──
+function login() {
+  const u = document.getElementById("username").value.trim();
+  const p = document.getElementById("password").value.trim();
+  if (!u || !p) { setMsg("loginMsg","Enter username and password","error"); return; }
+
+  setMsg("loginMsg","Signing in…","info");
+  document.getElementById("loginBtn").innerHTML = '<span class="spinner"></span>Signing in…';
+  document.getElementById("loginBtn").disabled = true;
+
+  fetch(API + "?action=sellerLogin&username=" + encodeURIComponent(u) + "&password=" + encodeURIComponent(p))
+  .then(r => r.json())
+  .then(d => {
+    if (d.status == "SUCCESS") {
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("panel").style.display = "block";
+      showToast("Welcome back!", "success");
+      startPolling();
+    } else {
+      setMsg("loginMsg","Invalid credentials","error");
+      document.getElementById("loginBtn").innerHTML = "Login";
+      document.getElementById("loginBtn").disabled = false;
+    }
+  })
+  .catch(() => {
+    setMsg("loginMsg","Connection error","error");
+    document.getElementById("loginBtn").innerHTML = "Login";
+    document.getElementById("loginBtn").disabled = false;
+  });
+}
+
+// ── POLLING ──
+function startPolling() {
+  setInterval(() => {
+    fetch(API + "?action=getLastUID")
+    .then(r => r.json())
+    .then(d => {
+      if (d.uid && d.uid !== lastUID) {
+        lastUID = d.uid;
+        document.getElementById("uid").value = d.uid;
+        document.getElementById("scanPulse").classList.add("active");
+        setMsg("statusMsg","","");
+        fetchUser();
+      }
+    })
+    .catch(() => {});
+  }, 2000);
+}
+
+// ── FETCH USER ──
+function fetchUser() {
+  const uid = document.getElementById("uid").value.trim();
+  if (!uid) return;
+  setMsg("statusMsg","Fetching cardholder…","info");
+
+  fetch(API + "?action=fetchUser&uid=" + uid)
+  .then(r => r.json())
+  .then(d => {
+    if (d.status == "FOUND") {
+      const today = new Date().toISOString().split("T")[0];
+      const expired = d.expiry < today;
+
+      setMsg("statusMsg", expired ? "⚠ Card Expired" : "✓ Card Verified", expired ? "warning" : "success");
+
+      document.getElementById("infoName").textContent = d.name;
+      document.getElementById("infoBadge").textContent = "Rs. " + d.balance;
+      document.getElementById("infoCin").textContent = d.cin || "—";
+      document.getElementById("infoExpiry").textContent = d.expiry + (expired ? " ⚠" : "");
+      document.getElementById("infoEmail").textContent = d.email || "—";
+      document.getElementById("userCard").classList.add("show");
+
+      // Pre-fill all tab forms
+      ["R","U"].forEach(s => {
+        document.getElementById("nameInput"+s).value = d.name;
+        document.getElementById("balanceInput"+s).value = d.balance;
+        document.getElementById("cinInput"+s).value = d.cin;
+        document.getElementById("emailInput"+s).value = d.email;
+      });
+
+    } else {
+      setMsg("statusMsg","⚠ Card not registered — use Register tab","warning");
+      document.getElementById("userCard").classList.remove("show");
+    }
+  })
+  .catch(() => setMsg("statusMsg","Connection error","error"));
+}
+
+// ── DEDUCT ──
+function deduct() {
+  const uid    = document.getElementById("uid").value.trim();
+  const amount = parseFloat(document.getElementById("amount").value);
+  const item   = document.getElementById("item").value.trim();
+
+  if (!uid)           { showToast("No card scanned!", "error"); return; }
+  if (!amount || amount <= 0) { showToast("Enter valid amount", "error"); return; }
+
+  setMsg("txMsg","Processing deduction…","info");
+
+  fetch(API + "?action=deduct&uid=" + uid + "&amount=" + amount + "&item=" + encodeURIComponent(item || "N/A"))
+  .then(r => r.json())
+  .then(d => {
+    if (d.status == "INSUFFICIENT_BALANCE") {
+      showToast("Insufficient balance!", "error");
+      setMsg("txMsg","Insufficient balance","error");
+    } else if (d.status == "SUCCESS") {
+      showToast("Deducted Rs." + amount + " · Balance: Rs." + d.newBalance, "success");
+      setMsg("txMsg","✓ Deducted · New Balance: Rs." + d.newBalance,"success");
+    } else {
+      showToast(d.status, "error");
+      setMsg("txMsg", d.status, "error");
+    }
+    document.getElementById("amount").value = "";
+    document.getElementById("item").value   = "";
+    fetchUser();
+  })
+  .catch(() => setMsg("txMsg","Connection error","error"));
+}
+
+// ── RECHARGE ──
+function recharge() {
+  const uid    = document.getElementById("uid").value.trim();
+  const amount = parseFloat(document.getElementById("amount").value);
+  const item   = document.getElementById("item").value.trim();
+
+  if (!uid)           { showToast("No card scanned!", "error"); return; }
+  if (!amount || amount <= 0) { showToast("Enter valid amount", "error"); return; }
+
+  setMsg("txMsg","Processing recharge…","info");
+
+  fetch(API + "?action=recharge&uid=" + uid + "&amount=" + amount + "&item=" + encodeURIComponent(item || "Recharge"))
+  .then(r => r.json())
+  .then(d => {
+    if (d.status == "SUCCESS") {
+      let msg = "Recharged Rs." + amount + " · Balance: Rs." + d.newBalance;
+      if (d.expiry) msg += " · Exp: " + d.expiry;
+      showToast(msg, "success");
+      setMsg("txMsg","✓ Recharged · New Balance: Rs." + d.newBalance + (d.expiry ? " · Exp: " + d.expiry : ""),"success");
+    } else {
+      showToast(d.status, "error"); setMsg("txMsg", d.status, "error");
+    }
+    document.getElementById("amount").value = "";
+    document.getElementById("item").value   = "";
+    fetchUser();
+  })
+  .catch(() => setMsg("txMsg","Connection error","error"));
+}
+
+// ── REGISTER ──
+function registerUser() {
+  const uid     = document.getElementById("uid").value.trim();
+  const name    = document.getElementById("nameInputR").value.trim();
+  const balance = document.getElementById("balanceInputR").value;
+  const cin     = document.getElementById("cinInputR").value.trim();
+  const email   = document.getElementById("emailInputR").value.trim();
+
+  if (!uid)   { showToast("No card scanned!", "error"); return; }
+  if (!name)  { showToast("Name required", "error"); return; }
+  if (!cin)   { showToast("CIN required", "error"); return; }
+  if (!email) { showToast("Email required", "error"); return; }
+
+  setMsg("regMsg","Registering…","info");
+
+  fetch(API + "?action=register&uid=" + uid +
+        "&name=" + encodeURIComponent(name) +
+        "&balance=" + balance +
+        "&cin=" + encodeURIComponent(cin) +
+        "&email=" + encodeURIComponent(email))
+  .then(r => r.json())
+  .then(d => {
+    if (d.status == "UPDATED_EXISTING") {
+      showToast("Existing card updated","warning");
+      setMsg("regMsg","Card already existed — details updated","warning");
+    } else {
+      showToast("User registered!","success");
+      setMsg("regMsg","✓ Registered successfully","success");
+    }
+    fetchUser();
+  })
+  .catch(() => setMsg("regMsg","Connection error","error"));
+}
+
+// ── UPDATE ──
+function updateUser() {
+  const uid     = document.getElementById("uid").value.trim();
+  const name    = document.getElementById("nameInputU").value.trim();
+  const balance = document.getElementById("balanceInputU").value;
+  const cin     = document.getElementById("cinInputU").value.trim();
+  const email   = document.getElementById("emailInputU").value.trim();
+
+  if (!uid)  { showToast("No card scanned!", "error"); return; }
+  if (!name) { showToast("Name required", "error"); return; }
+
+  setMsg("updMsg","Updating…","info");
+
+  fetch(API + "?action=update&uid=" + uid +
+        "&name=" + encodeURIComponent(name) +
+        "&balance=" + balance +
+        "&cin=" + encodeURIComponent(cin) +
+        "&email=" + encodeURIComponent(email))
+  .then(r => r.json())
+  .then(d => {
+    if (d.status == "UPDATED") {
+      showToast("User updated!","success");
+      setMsg("updMsg","✓ Updated successfully","success");
+    } else {
+      showToast(d.status,"error");
+      setMsg("updMsg", d.status,"error");
+    }
+    fetchUser();
+  })
+  .catch(() => setMsg("updMsg","Connection error","error"));
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && document.getElementById("loginSection").style.display !== "none") login();
+});
+
+// ── SERVICE WORKER REGISTRATION ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW error:', err));
+  });
+}
+
+// ── PWA INSTALL PROMPT ──
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install button after login
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'block';
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(choice => {
+      if (choice.outcome === 'accepted') showToast('App installed!', 'success');
+      deferredPrompt = null;
+      document.getElementById('installBtn').style.display = 'none';
+    });
+  }
+}
+
+window.addEventListener('appinstalled', () => {
+  showToast('Smart Card installed as app!', 'success');
+});
+</script>
+</body>
+</html>
